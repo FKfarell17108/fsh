@@ -1,5 +1,6 @@
 #include "input/line_editor.h"
 
+#include "highlight/highlight.h"
 #include "input/history.h"
 #include "platform/platform.h"
 
@@ -69,7 +70,9 @@ static void linebuf_set(LineBuf *lb, const char *text) {
 }
 
 static void redraw(const char *prompt, LineBuf *lb) {
-    printf("\r\x1b[K%s%s", prompt, lb->buf);
+    char *highlighted = highlight_render(lb->buf);
+    printf("\r\x1b[K%s%s", prompt, highlighted);
+    free(highlighted);
     size_t tail = lb->len - lb->cursor;
     if (tail > 0) {
         printf("\x1b[%zuD", tail);

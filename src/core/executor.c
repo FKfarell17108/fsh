@@ -73,6 +73,7 @@ static void run_single(const Command *cmd, int background) {
         int exit_code = 0;
         builtin_handle(cmd, &exit_code);
         shell_state_set_last_exit_code(exit_code);
+        fflush(stdout);
 
         if (saved_stdin >= 0) {
             dup2(saved_stdin, STDIN_FILENO);
@@ -108,6 +109,7 @@ static void run_single(const Command *cmd, int background) {
 
     PlatformIO io = {in_fd, out_fd, -1};
     pid_t pid;
+    fflush(stdout);
     if (platform_spawn(cmd, io, NULL, 0, &pid) < 0) {
         shell_state_set_last_exit_code(1);
         if (in_fd >= 0) {
@@ -199,6 +201,7 @@ static void run_pipeline_multi(const Pipeline *pipeline) {
         collect_close_fds(pipes, n - 1, in_fd, out_fd, &close_fds, &close_count);
 
         PlatformIO io = {in_fd, out_fd, -1};
+        fflush(stdout);
         platform_spawn(cmd, io, close_fds, close_count, &pids[i]);
         free(close_fds);
 

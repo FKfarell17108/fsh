@@ -11,6 +11,7 @@ add_executable(fsh
     env/variable.c
     env/alias.c
     env/fshrc.c
+    highlight/highlight.c
     input/history.c
     input/line_editor.c
     builtins/builtin.c
@@ -25,6 +26,7 @@ add_executable(fsh
     builtins/cmd_fshrc.c
     builtins/cmd_fsh.c
     prompt/prompt.c
+    prompt/git_info.c
 )
 
 target_include_directories(fsh PRIVATE ${CMAKE_SOURCE_DIR}/src)
