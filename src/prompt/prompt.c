@@ -4,7 +4,6 @@
 #include "prompt/git_info.h"
 
 #include <libgen.h>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,12 +41,12 @@ static void append_git_segment(char *buf, size_t buf_size) {
 }
 
 char *prompt_build(void) {
-    char cwd[PATH_MAX];
+    char cwd[4096];
     if (!getcwd(cwd, sizeof(cwd))) {
         strcpy(cwd, "?");
     }
 
-    char cwd_copy[PATH_MAX];
+    char cwd_copy[4096];
     strncpy(cwd_copy, cwd, sizeof(cwd_copy) - 1);
     cwd_copy[sizeof(cwd_copy) - 1] = '\0';
     char *folder = basename(cwd_copy);
