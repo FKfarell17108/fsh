@@ -71,8 +71,7 @@ static void run_single(const Command *cmd, int background) {
         }
 
         int exit_code = 0;
-        builtin_handle(cmd, &exit_code);
-        shell_state_set_last_exit_code(exit_code);
+        int handled = builtin_handle(cmd, &exit_code);
         fflush(stdout);
 
         if (saved_stdin >= 0) {
@@ -83,7 +82,11 @@ static void run_single(const Command *cmd, int background) {
             dup2(saved_stdout, STDOUT_FILENO);
             close(saved_stdout);
         }
-        return;
+
+        if (handled) {
+            shell_state_set_last_exit_code(exit_code);
+            return;
+        }
     }
 
     if (!background && platform_needs_pty(cmd->cmd) && isatty(STDIN_FILENO)) {

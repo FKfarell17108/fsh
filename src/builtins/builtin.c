@@ -13,10 +13,13 @@ int cmd_source(int argc, char **args, int *exit_code);
 int cmd_clear(int argc, char **args, int *exit_code);
 int cmd_fshrc(int argc, char **args, int *exit_code);
 int cmd_fsh(int argc, char **args, int *exit_code);
+int cmd_ls(int argc, char **args, int *exit_code);
+int cmd_dir(int argc, char **args, int *exit_code);
+int cmd_bookmarks(int argc, char **args, int *exit_code);
 
 static const char *BUILTIN_NAMES[] = {
     "cd", "pwd", "exit", "echo", "type", "alias", "unalias",
-    "source", "clear", "cls", "fshrc", "fsh", NULL
+    "source", "clear", "cls", "fshrc", "fsh", "ls", "dir", "bookmarks", NULL
 };
 
 int builtin_is_name(const char *name) {
@@ -44,6 +47,9 @@ int builtin_handle(const Command *cmd, int *exit_code) {
     if (strcmp(name, "clear") == 0 || strcmp(name, "cls") == 0) return cmd_clear(argc, args, exit_code);
     if (strcmp(name, "fshrc") == 0) return cmd_fshrc(argc, args, exit_code);
     if (strcmp(name, "fsh") == 0) return cmd_fsh(argc, args, exit_code);
+    if (strcmp(name, "ls") == 0) return cmd_ls(argc, args, exit_code);
+    if (strcmp(name, "dir") == 0) return cmd_dir(argc, args, exit_code);
+    if (strcmp(name, "bookmarks") == 0) return cmd_bookmarks(argc, args, exit_code);
 
     return 0;
 }

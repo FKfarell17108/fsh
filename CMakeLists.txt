@@ -11,6 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 add_compile_options(-Wall -Wextra -Wpedantic)
+add_compile_options(-Wno-format-truncation)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 

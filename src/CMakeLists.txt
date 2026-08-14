@@ -3,6 +3,8 @@ add_subdirectory(platform)
 add_executable(fsh
     main.c
     util/strbuf.c
+    util/json.c
+    util/id_gen.c
     core/ast.c
     core/lexer.c
     core/parser.c
@@ -12,6 +14,15 @@ add_executable(fsh
     env/alias.c
     env/fshrc.c
     highlight/highlight.c
+    tui/tui.c
+    fileops/activity_log.c
+    fileops/file_ops.c
+    fileops/trash.c
+    sort/sort.c
+    bookmarks/bookmarks.c
+    bookmarks/bookmark_picker.c
+    preview/preview.c
+    browser/interactive_browser.c
     input/history.c
     input/line_editor.c
     builtins/builtin.c
@@ -25,6 +36,9 @@ add_executable(fsh
     builtins/cmd_clear.c
     builtins/cmd_fshrc.c
     builtins/cmd_fsh.c
+    builtins/cmd_ls.c
+    builtins/cmd_dir.c
+    builtins/cmd_bookmarks.c
     prompt/prompt.c
     prompt/git_info.c
 )

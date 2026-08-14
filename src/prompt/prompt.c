@@ -17,11 +17,11 @@ static void append_git_segment(char *buf, size_t buf_size) {
     }
 
     char indicators[128] = {0};
-    if (git.dirty) {
-        strcat(indicators, " \x1b[33m\u25cf\x1b[0m");
-    }
     if (git.staged) {
-        strcat(indicators, " \x1b[32m\u271a\x1b[0m");
+        strcat(indicators, " \x1b[32m\u25cf\x1b[0m");
+    }
+    if (git.dirty) {
+        strcat(indicators, " \x1b[33m\u271a\x1b[0m");
     }
     if (git.untracked) {
         strcat(indicators, " \x1b[31m\u2026\x1b[0m");
