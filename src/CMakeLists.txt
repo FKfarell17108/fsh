@@ -18,13 +18,18 @@ add_executable(fsh
     fileops/activity_log.c
     fileops/file_ops.c
     fileops/trash.c
+    fileops/general_history_viewer.c
+    search/search.c
     sort/sort.c
     bookmarks/bookmarks.c
     bookmarks/bookmark_picker.c
     preview/preview.c
     browser/interactive_browser.c
     input/history.c
+    input/history_manager.c
     input/line_editor.c
+    completion/completion.c
+    completion/completion_picker.c
     builtins/builtin.c
     builtins/cmd_cd.c
     builtins/cmd_pwd.c

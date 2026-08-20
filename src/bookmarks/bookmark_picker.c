@@ -128,7 +128,7 @@ BookmarkPickerResult bookmark_picker_show(void) {
         if (c == 3 || c == 0x1b) {
             int next = -1;
             if (c == 0x1b) {
-                next = read_raw_byte();
+                next = tui_read_byte_after_esc();
             }
             if (next != '[') {
                 tui_exit_alt();

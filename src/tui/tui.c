@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
 #include <unistd.h>
 
 #define MAX_NAV_ROWS 2
@@ -423,6 +424,25 @@ static int read_raw_byte(void) {
     return (unsigned char)c;
 }
 
+int tui_read_byte(void) {
+    return read_raw_byte();
+}
+
+int tui_read_byte_after_esc(void) {
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(STDIN_FILENO, &fds);
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 35000;
+
+    int r = select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
+    if (r <= 0) {
+        return -1;
+    }
+    return read_raw_byte();
+}
+
 TuiPopupResult tui_popup_input(const char *label, const char *default_value, int has_input,
                                 const char *const *body_lines, size_t body_line_count,
                                 TuiRenderBgFn render_bg, TuiPopupChangeFn on_change) {
@@ -659,7 +679,7 @@ TuiPopupResult tui_popup_input(const char *label, const char *default_value, int
                 return result;
             }
             if (c == 0x1b) {
-                int c2 = read_raw_byte();
+                int c2 = tui_read_byte_after_esc();
                 if (c2 == '[') {
                     int c3 = read_raw_byte();
                     if (c3 == 'B') {
@@ -747,7 +767,7 @@ TuiPopupResult tui_popup_input(const char *label, const char *default_value, int
                 continue;
             }
             if (c == 0x1b) {
-                int c2 = read_raw_byte();
+                int c2 = tui_read_byte_after_esc();
                 if (c2 == '[') {
                     int c3 = read_raw_byte();
                     if (c3 == 'C') {

@@ -1,5 +1,6 @@
 #include "fileops/activity_log.h"
 
+#include "input/history.h"
 #include "util/id_gen.h"
 #include "util/json.h"
 #include "util/strbuf.h"
@@ -161,6 +162,27 @@ void activity_log_delete_command_events(const char *cmd) {
 
 void activity_log_delete_all_command_events(void) {
     remove_matching(is_command, NULL);
+    persist();
+}
+
+static int is_stale_command(const GeneralEvent *ev, const char *unused) {
+    (void)unused;
+    if (strcmp(ev->kind, "command") != 0) {
+        return 0;
+    }
+    size_t hc = history_count();
+    for (size_t i = 0; i < hc; i++) {
+        char cmd[4096];
+        long long ts;
+        if (history_entry_at(i, cmd, sizeof(cmd), &ts) && strcmp(cmd, ev->label) == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void activity_log_prune_stale_commands(void) {
+    remove_matching(is_stale_command, NULL);
     persist();
 }
 

@@ -550,7 +550,7 @@ BrowserResult interactive_browser_run(BrowseMode mode) {
 
         if (st.search_active) {
             if (c == 0x1b) {
-                int c2 = read_raw_byte();
+                int c2 = tui_read_byte_after_esc();
                 if (c2 != '[') {
                     st.search_active = 0;
                     st.search_query[0] = '\0';
@@ -591,7 +591,7 @@ BrowserResult interactive_browser_run(BrowseMode mode) {
         if (c == 3 || c == 0x1b) {
             int next = -1;
             if (c == 0x1b) {
-                next = read_raw_byte();
+                next = tui_read_byte_after_esc();
             }
             if (next != '[') {
                 free_entries(&st);

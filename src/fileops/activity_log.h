@@ -15,6 +15,7 @@ void activity_log_load(void);
 void log_event(const char *kind, const char *label, const char *detail);
 void activity_log_delete_command_events(const char *cmd);
 void activity_log_delete_all_command_events(void);
+void activity_log_prune_stale_commands(void);
 const GeneralEvent *activity_log_events(size_t *count);
 
 #endif

@@ -268,7 +268,7 @@ SortPickResult sort_show_picker(const char *kind, int current_key, SortDir curre
         if (c == 3 || c == 0x1b) {
             int next = -1;
             if (c == 0x1b) {
-                next = read_raw_byte();
+                next = tui_read_byte_after_esc();
             }
             if (next != '[') {
                 result.picked = 0;

@@ -1,9 +1,17 @@
 #include "input/line_editor.h"
 
+#include "bookmarks/bookmark_picker.h"
+#include "completion/completion.h"
+#include "completion/completion_picker.h"
+#include "fileops/general_history_viewer.h"
 #include "highlight/highlight.h"
 #include "input/history.h"
+#include "input/history_manager.h"
 #include "platform/platform.h"
+#include "search/search.h"
+#include "tui/tui.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -97,6 +105,24 @@ static char *read_line_non_tty(const char *prompt) {
     return line;
 }
 
+static int is_blank_line(const char *s) {
+    while (*s) {
+        if (!isspace((unsigned char)*s)) {
+            return 0;
+        }
+        s++;
+    }
+    return 1;
+}
+
+static void completion_replace_tail(LineBuf *lb, const char *partial, const char *replacement) {
+    size_t plen = strlen(partial);
+    size_t keep = lb->len >= plen ? lb->len - plen : 0;
+    char newline[8192];
+    snprintf(newline, sizeof(newline), "%.*s%s", (int)keep, lb->buf, replacement);
+    linebuf_set(lb, newline);
+}
+
 char *line_editor_read(const char *prompt) {
     if (!isatty(STDIN_FILENO)) {
         return read_line_non_tty(prompt);
@@ -141,7 +167,84 @@ char *line_editor_read(const char *prompt) {
             continue;
         }
 
-        if (c == 127 || c == 8) {
+        if (c == 2) {
+            BookmarkPickerResult br = bookmark_picker_show();
+            if (br.selected) {
+                if (chdir(br.path) != 0) {
+                    /* best effort */
+                }
+            }
+            redraw(prompt, &lb);
+            continue;
+        }
+
+        if (c == 8) {
+            general_history_viewer_show();
+            redraw(prompt, &lb);
+            continue;
+        }
+
+        if (c == 0x12) {
+            SearchSessionResult sr = search_show();
+            if (sr.has_result) {
+                linebuf_set(&lb, sr.value);
+            }
+            redraw(prompt, &lb);
+            continue;
+        }
+
+        if (c == '\t') {
+            if (is_blank_line(lb.buf)) {
+                if (history_count() == 0) {
+                    printf("\r\n\x1b[2m  (no command history yet)\x1b[0m\r\n");
+                    redraw(prompt, &lb);
+                    continue;
+                }
+                HistoryManagerResult hr = history_manager_show();
+                if (hr.selected) {
+                    linebuf_set(&lb, hr.cmd);
+                }
+                redraw(prompt, &lb);
+                continue;
+            }
+
+            CompletionResult cr = completion_get_candidates(lb.buf);
+            if (cr.candidates.count == 0) {
+                completion_free(&cr.candidates);
+                continue;
+            }
+            if (cr.candidates.count == 1) {
+                completion_replace_tail(&lb, cr.partial, cr.candidates.items[0]);
+                completion_free(&cr.candidates);
+                redraw(prompt, &lb);
+                continue;
+            }
+
+            char *prefix = completion_common_prefix(&cr.candidates);
+            if (strlen(prefix) > strlen(cr.partial)) {
+                completion_replace_tail(&lb, cr.partial, prefix);
+                free(prefix);
+                completion_free(&cr.candidates);
+                redraw(prompt, &lb);
+                continue;
+            }
+            free(prefix);
+
+            CompletionPickResult pr = completion_picker_show(&cr.candidates);
+            if (pr.kind == COMPLETION_PICK_SELECTED) {
+                completion_replace_tail(&lb, cr.partial, pr.chosen);
+            } else if (pr.kind == COMPLETION_PICK_HISTORY) {
+                HistoryManagerResult hr = history_manager_show();
+                if (hr.selected) {
+                    linebuf_set(&lb, hr.cmd);
+                }
+            }
+            completion_free(&cr.candidates);
+            redraw(prompt, &lb);
+            continue;
+        }
+
+        if (c == 127) {
             linebuf_delete_before_cursor(&lb);
             redraw(prompt, &lb);
             continue;
@@ -149,9 +252,11 @@ char *line_editor_read(const char *prompt) {
 
         if (c == 27) {
             char seq[2];
-            if (read(STDIN_FILENO, &seq[0], 1) <= 0) {
+            int b0 = tui_read_byte_after_esc();
+            if (b0 < 0) {
                 continue;
             }
+            seq[0] = (char)b0;
             if (read(STDIN_FILENO, &seq[1], 1) <= 0) {
                 continue;
             }

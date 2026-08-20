@@ -142,3 +142,31 @@ const char *history_get(size_t index_from_end) {
 size_t history_count(void) {
     return g_count;
 }
+
+int history_entry_at(size_t index_from_end, char *cmd_out, size_t cmd_out_size, long long *ts_out) {
+    if (index_from_end >= g_count) {
+        return 0;
+    }
+    const HistoryEntry *e = &g_entries[g_count - 1 - index_from_end];
+    snprintf(cmd_out, cmd_out_size, "%s", e->cmd);
+    *ts_out = e->ts;
+    return 1;
+}
+
+void history_delete_cmd(const char *cmd) {
+    for (size_t i = 0; i < g_count; i++) {
+        if (strcmp(g_entries[i].cmd, cmd) == 0) {
+            history_remove_at(i);
+            break;
+        }
+    }
+    history_save();
+}
+
+void history_delete_all(void) {
+    for (size_t i = 0; i < g_count; i++) {
+        free(g_entries[i].cmd);
+    }
+    g_count = 0;
+    history_save();
+}

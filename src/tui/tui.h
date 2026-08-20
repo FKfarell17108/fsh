@@ -31,6 +31,9 @@ void navrows_free(NavRows *nr);
 int tui_cols(void);
 int tui_rows(void);
 
+int tui_read_byte(void);
+int tui_read_byte_after_esc(void);
+
 size_t tui_visible_len(const char *str);
 char *tui_pad_or_trim(const char *str, int width);
 

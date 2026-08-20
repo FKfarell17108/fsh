@@ -5,10 +5,11 @@
 #include <unistd.h>
 
 static struct termios g_orig_termios;
-static int g_raw_active = 0;
+static int g_raw_depth = 0;
 
 int platform_raw_mode_enable(void) {
-    if (g_raw_active) {
+    if (g_raw_depth > 0) {
+        g_raw_depth++;
         return 0;
     }
     if (tcgetattr(STDIN_FILENO, &g_orig_termios) < 0) {
@@ -25,18 +26,21 @@ int platform_raw_mode_enable(void) {
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) < 0) {
         return -1;
     }
-    g_raw_active = 1;
+    g_raw_depth = 1;
     return 0;
 }
 
 int platform_raw_mode_disable(void) {
-    if (!g_raw_active) {
+    if (g_raw_depth == 0) {
+        return 0;
+    }
+    g_raw_depth--;
+    if (g_raw_depth > 0) {
         return 0;
     }
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &g_orig_termios) < 0) {
         return -1;
     }
-    g_raw_active = 0;
     return 0;
 }
 
